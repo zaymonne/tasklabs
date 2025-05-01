@@ -37,12 +37,12 @@ TAG MANAGEMENT
 ANALYTICS
    Single Tasks
    1. Total
-   2. Finished
+   2. Done
    3. Pending
 
    Grouped Tasks
    1. Total
-   2. Finished
+   2. Done
    3. Pending
 
 PERSONALIZATION

@@ -183,6 +183,38 @@ module.exports = db => {
       }
    })
 
+   // =========================================GROUPED_TASKS
+
+   // fetching grouped tasks only
+   router.get("/fetch-grouped-tasks", async (req, res) => {
+      try {
+         const groupedTasks = await db.collection("grouped_tasks").find().toArray()
+
+         res.json({ success: true, groupedTasks })
+      }
+      catch (err) {
+         console.error("Error fetching grouped tasks: ", err)
+         res.status(500).json({ success: false, msg: "Failed to fetch grouped tasks." })
+      }
+   })
+
+   // adding grouped tasks
+   router.post("/add-grouped-task", async (req, res) => {
+      const { ownerID, title, description, tags, priority, imageURL } = req.body
+      
+      try {
+         const dueDate = new Date()
+         const taskIDs = []
+         const groupedTasks = await db.collection("grouped_tasks").insertOne({ ownerID, title, description, tags, priority, imageURL, done: false, dueDate, taskIDs })
+
+         res.status(201).json({ success: true, id: groupedTasks.insertedId })
+      }
+      catch (err) {
+         console.error("Error adding single task: ", err)
+         res.status(500).json({ success: false, msg: "Failed to add grouped task." })
+      }
+   })
+
    // =========================================TAG
 
    // fetching tag
