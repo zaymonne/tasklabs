@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt")
 const nodemailer = require("nodemailer")
 const express = require("express")
-const { ObjectId } = require("mongodb")
 const router = express.Router()
+const { ObjectId } = require("mongodb")
 require("dotenv").config()
 
 module.exports = db => {
@@ -84,7 +84,7 @@ module.exports = db => {
    })
 
    // update user
-   router.post("/update-user", async (req, res) => {
+   router.patch("/update-user", async (req, res) => {
       const { id, username, email } = req.body
 
       try {
@@ -169,11 +169,11 @@ module.exports = db => {
 
    // adding single task
    router.post("/add-single-task", async (req, res) => {
-      const { ownerID, title, description, tags, priority, imageURL } = req.body
+      const { ownerID, title, description, tags, priority } = req.body
       
       try {
          const dueDate = new Date()
-         const singleTasks = await db.collection("single_tasks").insertOne({ ownerID, title, description, tags, priority, imageURL, dueDate, done: false })
+         const singleTasks = await db.collection("single_tasks").insertOne({ ownerID, title, description, tags, priority, dueDate, done: false })
 
          res.status(201).json({ success: true, id: singleTasks.insertedId })
       }
@@ -183,7 +183,44 @@ module.exports = db => {
       }
    })
 
-   // =========================================GROUPED_TASKS
+   // updating single task
+   router.patch("/update-single-task", async (req, res) => {
+      const { id, title, description, tags, priority, done } = req.body
+
+      try {
+         const result = await db.collection("single_tasks").updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { title, description, tags, priority, done } }
+         )
+
+         if (result.modifiedCount == 0) {
+            return res.status(404).json({ success: false, msg: "No changes made. Task not found." })
+         }
+
+         res.status(201).json({ success: true, msg: "Task has been updated." })
+      }
+      catch (err) {
+         console.error("Error while updating the single task:", err)
+         res.status(500).json({ success: false, msg: "Failed to update single task due to an error." })
+      }
+   })
+
+   // deleting single task
+   router.delete("/delete-single-task", async (req, res) => {
+      const { id } = req.body
+
+      try {
+         await db.collection("single_tasks").deleteOne({ _id: new ObjectId(id) })
+
+         res.status(201).json({ success: true, msg: "Task has been deleted." })
+      }
+      catch (err) {
+         console.error("Error while deleting the task:", err)
+         res.status(500).json({ success: false, msg: "Failed to delete the task due to an error." })
+      }
+   })
+
+   // =========================================GROUPED_TASK
 
    // fetching grouped tasks only
    router.get("/fetch-grouped-tasks", async (req, res) => {
@@ -200,12 +237,11 @@ module.exports = db => {
 
    // adding grouped tasks
    router.post("/add-grouped-task", async (req, res) => {
-      const { ownerID, title, description, tags, priority, imageURL } = req.body
+      const { ownerID, title, description, tags, priority } = req.body
       
       try {
          const dueDate = new Date()
-         const taskIDs = []
-         const groupedTasks = await db.collection("grouped_tasks").insertOne({ ownerID, title, description, tags, priority, imageURL, done: false, dueDate, taskIDs })
+         const groupedTasks = await db.collection("grouped_tasks").insertOne({ ownerID, title, description, tags, priority, done: false, dueDate })
 
          res.status(201).json({ success: true, id: groupedTasks.insertedId })
       }
@@ -215,6 +251,110 @@ module.exports = db => {
       }
    })
 
+   router.patch("/update-grouped-task", async (req, res) => {
+      const { id, title, description, tags, priority } = req.body
+
+      try {
+         const result = db.collection("grouped_tasks").updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { title, description, tags, priority } }
+         )
+
+         if (result.modifiedCount == 0) {
+            return res.status(404).json({ success: false, msg: "No changes made. Task was not found." })
+         }
+
+         res.status(201).json({ success: true, msg: "Task has been updated." })
+      }
+      catch (err) {
+         console.error("Error while updating the task:", err)
+         res.status(500).json({ success: false, msg: "Failed to update the task due to an error." })
+      }
+   })
+
+   // deleting grouped task
+   router.delete("/delete-grouped-task", async (req, res) => {
+      const { id } = req.body
+
+      try {
+         await db.collection("grouped_tasks").deleteOne({ _id: new ObjectId(id) })
+
+         res.status(201).json({ success: true, msg: "Task has been deleted." })
+      }
+      catch (err) {
+         console.error("Error while deleting the task:", err)
+         res.status(500).json({ success: false, msg: "Failed to delete the task due to an error." })
+      }
+   })
+   
+   // =========================================GT_TASK
+   
+   // fetching gt tasks
+   router.get("/fetch-gt-tasks", async (req, res) => {
+      try {
+         const gtTasks = await db.collection("gt_tasks").find().toArray()
+
+         res.json({ success: true, gtTasks })
+      }
+      catch (err) {
+         console.error("Error fetching gt tasks: ", err)
+         res.status(500).json({ success: false, msg: "Failed to fetch gt tasks." })
+      }
+   })
+
+   // adding gt task
+   router.post("/add-gt-task", async (req, res) => {
+      const { groupedTaskID, title, description, tags, priority } = req.body
+      
+      try {
+         const dueDate = new Date()
+         const gtTasks = await db.collection("gt_tasks").insertOne({ groupedTaskID, title, description, tags, priority, done: false, dueDate })
+
+         res.status(201).json({ success: true, id: gtTasks.insertedId })
+      }
+      catch (err) {
+         console.error("Error adding single task: ", err)
+         res.status(500).json({ success: false, msg: "Failed to add gt task." })
+      }
+   })
+
+   // updating gt task
+   router.patch("/update-gt-task", async (req, res) => {
+      const { id, title, description, tags, priority, done } = req.body
+
+      try {
+         const result = db.collection("gt_tasks").updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { title, description, tags, priority, done } }
+         )
+
+         if (result.modifiedCount == 0) {
+            return res.status(404).json({ success: false, msg: "No changes made. Task was not found." })
+         }
+
+         res.status(201).json({ success: true, msg: "Task has been updated." })
+      }
+      catch (err) {
+         console.error("Error while updating the task.")
+         res.status(500).json({ success: false, msg: "Failed to update the task due to an error." })
+      }
+   })
+
+   // deleting gt task
+   router.delete("/delete-gt-task", async (req, res) => {
+      const { id } = req.body
+
+      try {
+         await db.collection("gt_tasks").deleteOne({ _id: new ObjectId(id) })
+
+         res.status(201).json({ success: true, msg: "Task has been deleted." })
+      }
+      catch (err) {
+         console.error("Error while deleting the task:", err)
+         res.status(500).json({ success: false, msg: "Failed to delete the task due to an error." })
+      }
+   })
+   
    // =========================================TAG
 
    // fetching tag
@@ -246,7 +386,7 @@ module.exports = db => {
    })
 
    // updating tag
-   router.post("/update-tag", async (req, res) => {
+   router.patch("/update-tag", async (req, res) => {
       const { id, name, color } = req.body
 
       try {
@@ -268,7 +408,7 @@ module.exports = db => {
    })
    
    // deleting tag
-   router.post("/delete-tag", async (req, res) => {
+   router.delete("/delete-tag", async (req, res) => {
       const { id } = req.body
 
       try {
