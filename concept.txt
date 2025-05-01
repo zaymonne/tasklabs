@@ -1,0 +1,55 @@
+To-do Webapp
+
+Features:
+
+TASK MANAGEMENT
+   Single Tasks
+   1. Can be categorized by tags
+   2. Adding Images
+   3. Adding Note (Task Description)
+   4. Can be added to a grouped task (Personal or Team)
+   5. Priority Level Setting (low, medium, urgent)
+
+   Options:
+   1. Update/Edit
+   2. Finish
+   
+   Grouped Tasks
+   1. Can be categorized by tags
+   2. You can add multiple single tasks inside it
+   3. Adding Images
+   4. Adding Note (Task Description)
+   5. Progress bar
+   6. Priority Level Setting (low, medium, urgent)
+   
+   Options
+   1. Update/Edit
+   2. Finish
+
+TAG MANAGEMENT
+   1. Creation
+      1. Adding Tag Name
+      2. Adding Tag Color
+   2. Editing
+   3. Deleting
+
+
+ANALYTICS
+   Single Tasks
+   1. Total
+   2. Finished
+   3. Pending
+
+   Grouped Tasks
+   1. Total
+   2. Finished
+   3. Pending
+
+PERSONALIZATION
+   Theme Modes:
+   1. Light Mode
+   2. Dark Mode
+
+   Notifications
+   1. Email
+   2. Push
